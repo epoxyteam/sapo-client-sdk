@@ -1,0 +1,22 @@
+{
+  "entryPoints": ["src/index.ts"],
+  "out": "docs",
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeExternals": true,
+  "theme": "default",
+  "name": "Sapo Client SDK",
+  "includeVersion": true,
+  "categorizeByGroup": true,
+  "categoryOrder": [
+    "Authentication",
+    "Resources",
+    "Core",
+    "Types",
+    "Errors",
+    "*"
+  ],
+  "navigationLinks": {
+    "GitHub": "https://github.com/yourusername/sapo-client-sdk"
+  }
+}
