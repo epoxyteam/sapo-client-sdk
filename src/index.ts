@@ -1,9 +1,10 @@
+// Core exports
 export { SapoClient } from './client';
 export { SapoAuth } from './auth/oauth';
 export { HttpClient } from './core/client';
 export { RateLimiter } from './core/rate-limiter';
 
-// Resource exports
+// Resource handlers
 export { Products } from './resources/products';
 
 // Error exports
@@ -16,9 +17,10 @@ export {
   NetworkError,
 } from './errors';
 
-// Type exports
+// Auth types
 export type { AuthConfig, AuthorizeOptions, Token, Scope, VerifyHmacOptions } from './types/auth';
 
+// Client types
 export type {
   ClientConfig,
   RequestOptions,
@@ -35,9 +37,8 @@ export type {
   ProductVariant,
   ProductOption,
   CreateProductData,
-  UpdateProductData,
   ProductListParams,
-} from './resources/products';
+} from './types/products';
 
-// Constants
+// Version
 export const VERSION = '0.1.0';

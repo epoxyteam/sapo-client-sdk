@@ -1,98 +1,69 @@
+import { AuthConfig } from './types/auth';
+import { ClientConfig } from './types/client';
 import { HttpClient } from './core/client';
 import { RateLimiter } from './core/rate-limiter';
 import { SapoAuth } from './auth/oauth';
-import { AuthConfig, AuthorizeOptions, Token } from './types/auth';
-import { ClientConfig } from './types/client';
+import { Products } from './resources/products';
+import { Scope } from './types/auth';
 
 /**
- * Main client class for interacting with the Sapo API.
- *
- * @example
- * ```typescript
- * const client = new SapoClient({
- *   apiKey: 'your-api-key',
- *   secretKey: 'your-secret-key',
- *   redirectUri: 'https://your-app.com/oauth/callback'
- * });
- * ```
+ * Main Sapo API client
+ * @category Core
  */
 export class SapoClient {
+  private readonly config: Required<AuthConfig>;
   private readonly auth: SapoAuth;
   private readonly httpClient: HttpClient;
   private readonly rateLimiter: RateLimiter;
 
-  /**
-   * Creates a new instance of the Sapo API client.
-   *
-   * @param config - Configuration options for the client
-   * @throws {ValidationError} If required configuration options are missing
-   */
-  constructor(config: AuthConfig) {
-    this.auth = new SapoAuth(config);
-    this.rateLimiter = new RateLimiter();
+  // Resource handlers
+  public readonly products: Products;
 
+  constructor(config: AuthConfig) {
+    this.validateConfig(config);
+    this.config = this.initializeConfig(config);
+    this.auth = new SapoAuth(this.config);
+    this.rateLimiter = new RateLimiter();
+    this.httpClient = this.createHttpClient();
+
+    // Initialize resource handlers
+    this.products = new Products(this);
+  }
+
+  private validateConfig(config: AuthConfig): void {
+    if (!config.apiKey || !config.secretKey || !config.redirectUri) {
+      throw new Error('apiKey, secretKey, and redirectUri are required');
+    }
+  }
+
+  private initializeConfig(config: AuthConfig): Required<AuthConfig> {
+    return {
+      apiKey: config.apiKey,
+      secretKey: config.secretKey,
+      redirectUri: config.redirectUri,
+      store: config.store || '',
+    };
+  }
+
+  private createHttpClient(): HttpClient {
     const clientConfig: ClientConfig = {
-      baseURL: config.store ? `https://${config.store}` : '',
+      baseURL: this.config.store ? `https://${this.config.store}` : '',
       timeout: 30000,
       headers: {},
     };
 
-    this.httpClient = new HttpClient(clientConfig);
+    return new HttpClient(clientConfig);
   }
 
   /**
-   * Generate OAuth authorization URL for user authentication.
-   *
-   * @param options - Authorization options including store and scopes
-   * @returns The authorization URL to redirect users to
-   *
-   * @example
-   * ```typescript
-   * const url = client.getAuthorizationUrl({
-   *   store: 'your-store.mysapo.net',
-   *   scopes: ['read_products', 'write_products']
-   * });
-   * ```
-   */
-  public getAuthorizationUrl(options: AuthorizeOptions): string {
-    return this.auth.getAuthorizationUrl(options);
-  }
-
-  /**
-   * Complete OAuth flow and obtain access token.
-   *
-   * @param store - Store name (e.g., 'your-store.mysapo.net')
-   * @param callbackUrl - Full callback URL with authorization code
-   * @returns OAuth token response
-   * @throws {AuthenticationError} If authentication fails
-   *
-   * @example
-   * ```typescript
-   * const token = await client.completeOAuth(
-   *   'your-store.mysapo.net',
-   *   'callback-url-with-code'
-   * );
-   * ```
-   */
-  public async completeOAuth(store: string, callbackUrl: string): Promise<Token> {
-    const token = await this.auth.completeOAuth(store, callbackUrl);
-    this.setAccessToken(token.access_token);
-    return token;
-  }
-
-  /**
-   * Set access token for authenticated requests.
-   *
-   * @param token - Access token from OAuth flow or stored token
+   * Set access token for authenticated requests
    */
   public setAccessToken(token: string): void {
     this.httpClient.setAccessToken(token);
   }
 
   /**
-   * Update store URL for API requests.
-   *
-   * @param store - Store name (e.g., 'your-store.mysapo.net')
+   * Set store URL for API requests
    */
   public setStore(store: string): void {
     this.httpClient.updateConfig({
@@ -101,21 +72,7 @@ export class SapoClient {
   }
 
   /**
-   * Make an authenticated GET request.
-   *
-   * @param path - API endpoint path
-   * @param params - Query parameters
-   * @returns Promise resolving to response data
-   * @throws {RateLimitError} If rate limit is exceeded
-   * @throws {ApiError} If API request fails
-   *
-   * @example
-   * ```typescript
-   * const products = await client.get('/admin/products.json', {
-   *   limit: 10,
-   *   page: 1
-   * });
-   * ```
+   * Make a GET request
    */
   public async get<T>(path: string, params?: Record<string, any>): Promise<T> {
     await this.rateLimiter.checkRateLimit();
@@ -125,13 +82,7 @@ export class SapoClient {
   }
 
   /**
-   * Make an authenticated POST request.
-   *
-   * @param path - API endpoint path
-   * @param data - Request body data
-   * @returns Promise resolving to response data
-   * @throws {RateLimitError} If rate limit is exceeded
-   * @throws {ApiError} If API request fails
+   * Make a POST request
    */
   public async post<T>(path: string, data?: any): Promise<T> {
     await this.rateLimiter.checkRateLimit();
@@ -141,13 +92,7 @@ export class SapoClient {
   }
 
   /**
-   * Make an authenticated PUT request.
-   *
-   * @param path - API endpoint path
-   * @param data - Request body data
-   * @returns Promise resolving to response data
-   * @throws {RateLimitError} If rate limit is exceeded
-   * @throws {ApiError} If API request fails
+   * Make a PUT request
    */
   public async put<T>(path: string, data?: any): Promise<T> {
     await this.rateLimiter.checkRateLimit();
@@ -157,12 +102,7 @@ export class SapoClient {
   }
 
   /**
-   * Make an authenticated DELETE request.
-   *
-   * @param path - API endpoint path
-   * @returns Promise resolving to response data
-   * @throws {RateLimitError} If rate limit is exceeded
-   * @throws {ApiError} If API request fails
+   * Make a DELETE request
    */
   public async delete<T>(path: string): Promise<T> {
     await this.rateLimiter.checkRateLimit();
@@ -172,22 +112,32 @@ export class SapoClient {
   }
 
   /**
-   * Get current rate limit information.
-   *
-   * @returns Current rate limit status
+   * Get OAuth authorization URL
+   */
+  public getAuthorizationUrl(store: string, scopes: Scope[]): string {
+    return this.auth.getAuthorizationUrl({ store, scopes });
+  }
+
+  /**
+   * Complete OAuth flow and get access token
+   */
+  public async completeOAuth(store: string, callbackUrl: string): Promise<string> {
+    const token = await this.auth.completeOAuth(store, callbackUrl);
+    this.httpClient.setAccessToken(token.access_token);
+    return token.access_token;
+  }
+
+  /**
+   * Get current rate limit information
    */
   public getRateLimits() {
     return this.rateLimiter.getRateLimits();
   }
 
   /**
-   * Verify HMAC signature from Sapo.
-   *
-   * @param query - Query parameters to verify
-   * @param hmac - HMAC signature to verify against
-   * @returns Whether the HMAC signature is valid
+   * Verify webhook HMAC signature
    */
-  public verifyHmac(query: Record<string, string>, hmac: string): boolean {
+  public verifyWebhookHmac(query: Record<string, string>, hmac: string): boolean {
     return this.auth.verifyHmac({ query, hmac });
   }
 }

@@ -2,3 +2,5 @@ node_modules/
 plan/
 sapo-api-docs/
 examples/
+.DS_Store
+*.log
