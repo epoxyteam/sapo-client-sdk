@@ -20,7 +20,19 @@
     "typescript",
     "ecommerce"
   ],
-  "author": "",
+  "author": {
+    "email": "huyphongbn24@gmail.com",
+    "name": "Phong H.",
+    "url": "https://github.com/doivjpxx"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/doivjpxx/sapo-client-sdk.git"
+  },
+  "homepage": "https://github.com/doivjpxx/sapo-client-sdk#readme",
+  "bugs": {
+    "url": "https://github.com/doivjpxx/sapo-client-sdk/issues"
+  },
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.11.24",
