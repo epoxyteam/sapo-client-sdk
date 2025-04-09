@@ -13,6 +13,7 @@ import { Fulfillments } from './resources/fulfillments';
 import { Metafields } from './resources/metafields';
 import { Pages } from './resources/pages';
 import { Blogs } from './resources/blogs';
+import { Webhooks } from './resources/webhooks';
 import { Scope } from './types/auth';
 
 /**
@@ -36,6 +37,7 @@ export class SapoClient {
   public readonly metafields: Metafields;
   public readonly pages: Pages;
   public readonly blogs: Blogs;
+  public readonly webhooks: Webhooks;
 
   constructor(config: AuthConfig) {
     this.validateConfig(config);
@@ -55,6 +57,7 @@ export class SapoClient {
     this.metafields = new Metafields(this);
     this.pages = new Pages(this);
     this.blogs = new Blogs(this);
+    this.webhooks = new Webhooks(this);
   }
 
   private validateConfig(config: AuthConfig): void {

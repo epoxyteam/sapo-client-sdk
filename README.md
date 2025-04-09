@@ -1,171 +1,284 @@
 # Sapo Client SDK
 
-A TypeScript SDK for the Sapo API, providing easy-to-use methods for authentication and API operations.
+Một SDK viết bằng TypeScript dành cho API của Sapo, cung cấp các phương thức tiện lợi để xác thực và thao tác với API.
 
-## Features
+## Tính năng nổi bật
 
-- Full TypeScript support with comprehensive type definitions
-- OAuth 2.0 authentication
-- Automatic rate limiting (40 requests/minute, 80,000/day)
-- Resource-specific API modules
-- Error handling with typed error classes
-- Request/Response interceptors
-- Webhook handling utilities
+- Hỗ trợ đầy đủ TypeScript với định nghĩa kiểu rõ ràng
+- Hỗ trợ xác thực theo chuẩn OAuth 2.0
+- Tự động giới hạn tốc độ gọi API (40 yêu cầu/phút, 80.000 yêu cầu/ngày)
+- Các module API theo từng loại tài nguyên
+- Xử lý lỗi với các class lỗi được định nghĩa sẵn
+- Hỗ trợ interceptor cho request/response
+- Tiện ích xử lý webhook
 
-## Installation
+## Cài đặt
 
 ```bash
+# Sử dụng npm
 npm install sapo-client-sdk
+
+# Sử dụng yarn
+yarn add sapo-client-sdk
+
+# Sử dụng pnpm
+pnpm add sapo-client-sdk
 ```
 
-## Quick Start
+### Yêu cầu hệ thống
+
+- Node.js phiên bản 14.x trở lên
+- TypeScript phiên bản 4.x trở lên (nếu bạn dùng TypeScript)
+
+### Cấu hình
+
+Tạo file `.env` ở thư mục gốc của dự án:
+
+```env
+SAPO_API_KEY=your_api_key
+SAPO_SECRET_KEY=your_secret_key
+SAPO_REDIRECT_URI=https://your-app.com/oauth/callback
+```
+
+## Khởi động nhanh
 
 ```typescript
 import { SapoClient } from 'sapo-client-sdk';
 
-// Initialize the client
+// Khởi tạo client
 const client = new SapoClient({
   apiKey: 'your-api-key',
   secretKey: 'your-secret-key',
   redirectUri: 'https://your-app.com/oauth/callback',
 });
 
-// Get OAuth authorization URL
+// Lấy URL để người dùng xác thực OAuth
 const authUrl = client.getAuthorizationUrl({
   store: 'your-store.mysapo.net',
   scopes: ['read_products', 'write_products'],
 });
 
-// After OAuth callback, complete authentication
-const token = await client.completeOAuth(
-  'your-store.mysapo.net',
-  'callback-url-with-code'
-);
+// Sau khi xác thực, hoàn tất quy trình OAuth
+const token = await client.completeOAuth('your-store.mysapo.net', 'callback-url-with-code');
 
-// Now you can make API calls
+// Gọi API
 try {
   const products = await client.get('/admin/products.json');
   console.log(products);
 } catch (error) {
-  console.error('API Error:', error);
+  console.error('Lỗi API:', error);
 }
 ```
 
-## OAuth Authentication
+## Hướng dẫn xác thực
 
-The SDK handles the complete OAuth flow:
+SDK hỗ trợ quy trình xác thực theo chuẩn OAuth 2.0. Các bước triển khai như sau:
 
-1. Generate authorization URL:
+### 1. Khởi tạo client
+
+```typescript
+const client = new SapoClient({
+  apiKey: process.env.SAPO_API_KEY,
+  secretKey: process.env.SAPO_SECRET_KEY,
+  redirectUri: process.env.SAPO_REDIRECT_URI,
+});
+```
+
+### 2. Tạo URL xác thực
+
 ```typescript
 const authUrl = client.getAuthorizationUrl({
   store: 'your-store.mysapo.net',
   scopes: ['read_products', 'write_products'],
+  state: 'optional-state-parameter', // Tùy chọn để bảo vệ CSRF
 });
-// Redirect user to authUrl
+// Chuyển hướng người dùng tới authUrl
 ```
 
-2. Handle OAuth callback:
+### 3. Xử lý callback từ OAuth
+
 ```typescript
-const token = await client.completeOAuth(
-  'your-store.mysapo.net',
-  'callback-url-with-code'
-);
-// Token is automatically set for future requests
+app.get('/oauth/callback', async (req, res) => {
+  try {
+    const token = await client.completeOAuth(
+      'your-store.mysapo.net',
+      req.url // URL callback chứa mã xác thực
+    );
+
+    // Lưu token một cách an toàn
+    await saveToken(token);
+
+    res.redirect('/dashboard');
+  } catch (error) {
+    console.error('Lỗi OAuth:', error);
+    res.redirect('/error');
+  }
+});
 ```
 
-## Working with Products
-
-Example of basic product operations:
+### 4. Quản lý token
 
 ```typescript
-import { SapoClient, Products } from 'sapo-client-sdk';
+// Lưu token
+const token = await client.completeOAuth(...);
+client.setToken(token);
 
-const client = new SapoClient({
-  apiKey: 'your-api-key',
-  secretKey: 'your-secret-key',
-  redirectUri: 'https://your-app.com/oauth/callback',
-});
-
-const products = new Products(client);
-
-// List products
-const productList = await products.list({
-  limit: 10,
-  page: 1,
-  vendor: 'Apple',
-});
-
-// Create a product
-const newProduct = await products.create({
-  name: 'Test Product',
-  content: 'Product description',
-  variants: [
-    {
-      price: 99.99,
-      inventory_quantity: 10,
-    },
-  ],
-});
-
-// Update a product
-const updatedProduct = await products.update(newProduct.id, {
-  name: 'Updated Product Name',
-});
-
-// Delete a product
-await products.delete(newProduct.id);
+// Kiểm tra token hết hạn
+if (client.isTokenExpired()) {
+  // Làm mới token
+  const newToken = await client.refreshToken(token.refresh_token);
+  client.setToken(newToken);
+}
 ```
 
-## Error Handling
+## Giới hạn tốc độ (Rate Limiting)
 
-The SDK provides typed error classes for better error handling:
+SDK sử dụng thuật toán token bucket để giới hạn tốc độ theo yêu cầu của Sapo:
+
+- 40 yêu cầu/phút/IP
+- 80.000 yêu cầu/ngày/shop
+
+### Giới hạn tự động
+
+SDK sẽ tự động quản lý việc giới hạn tốc độ và xếp hàng các yêu cầu nếu cần:
 
 ```typescript
-import { SapoError, RateLimitError } from 'sapo-client-sdk';
+const client = new SapoClient({...});
 
+for (let i = 0; i < 100; i++) {
+  await client.get('/admin/products.json'); // SDK sẽ tự xếp hàng các yêu cầu
+}
+```
+
+### Kiểm tra thủ công
+
+Bạn có thể tự kiểm tra trạng thái giới hạn:
+
+```typescript
+const limits = client.getRateLimits();
+console.log({
+  remaining: limits.remaining, // Số yêu cầu còn lại
+  limit: limits.limit, // Tổng giới hạn
+  reset: limits.reset, // Thời gian reset tiếp theo
+});
+```
+
+Xử lý lỗi do vượt quá giới hạn:
+
+```typescript
 try {
-  await products.list();
+  await client.get('/admin/products.json');
 } catch (error) {
   if (error instanceof RateLimitError) {
-    console.log('Rate limit exceeded, retry after:', error.retryAfter);
-  } else if (error instanceof SapoError) {
-    console.log('API Error:', error.message, error.code);
+    console.log('Vượt quá giới hạn gọi API');
+    console.log('Thử lại sau:', error.retryAfter, 'giây');
   }
 }
 ```
 
-## Rate Limiting
+## Hướng dẫn xử lý lỗi
 
-The SDK automatically handles Sapo's rate limits:
-- 40 requests per minute per IP
-- 80,000 requests per day per shop
-
-You can check current rate limits:
+SDK cung cấp các class lỗi được định nghĩa để dễ xử lý:
 
 ```typescript
-const limits = client.getRateLimits();
-console.log('Remaining requests:', limits.remaining);
-```
+import {
+  SapoError,
+  AuthenticationError,
+  RateLimitError,
+  ValidationError,
+  NotFoundError,
+  NetworkError,
+} from 'sapo-client-sdk';
 
-## Webhook Handling
-
-Verify webhook signatures:
-
-```typescript
-const isValid = client.verifyHmac(query, hmac);
-if (isValid) {
-  // Process webhook
+try {
+  await client.get('/admin/products.json');
+} catch (error) {
+  if (error instanceof AuthenticationError) {
+    console.log('Xác thực thất bại:', error.message);
+  } else if (error instanceof RateLimitError) {
+    console.log('Quá giới hạn, thử lại sau:', error.retryAfter);
+  } else if (error instanceof ValidationError) {
+    console.log('Lỗi xác thực dữ liệu:', error.errors);
+  } else if (error instanceof NotFoundError) {
+    console.log('Không tìm thấy tài nguyên:', error.message);
+  } else if (error instanceof NetworkError) {
+    console.log('Lỗi mạng:', error.message);
+  } else if (error instanceof SapoError) {
+    console.log('Lỗi từ API:', error.message, error.code);
+  }
 }
 ```
 
-## API Documentation
+## Hướng dẫn xử lý Webhook
 
-For detailed API documentation and examples, see:
-- [Authentication](docs/authentication.md)
-- [Products](docs/products.md)
-- [Orders](docs/orders.md)
-- [Customers](docs/customers.md)
+SDK hỗ trợ đầy đủ các thao tác với webhook:
 
-## License
+### Tạo Webhook
 
-MIT License - see LICENSE file for details.
+```typescript
+const webhooks = client.webhooks;
+
+// Tạo webhook mới
+const webhook = await webhooks.create({
+  topic: 'orders/create',
+  address: 'https://your-app.com/webhooks',
+  format: 'json',
+});
+
+// Danh sách webhook đang hoạt động
+const activeWebhooks = await webhooks.list();
+
+// Cập nhật webhook
+await webhooks.update(webhook.id, {
+  address: 'https://new-address.com/webhooks',
+});
+```
+
+### Bảo mật webhook
+
+```typescript
+import express from 'express';
+const app = express();
+
+app.post('/webhooks', express.raw({ type: 'application/json' }), (req, res) => {
+  const signature = req.headers['x-sapo-hmac-sha256'];
+  const body = req.body.toString();
+
+  if (!client.webhooks.verifySignature(signature, body)) {
+    return res.status(401).send('Chữ ký không hợp lệ');
+  }
+
+  const webhook = JSON.parse(body);
+  console.log('Webhook nhận được:', webhook);
+  res.status(200).send('OK');
+});
+```
+
+### Quản lý webhook deliveries
+
+```typescript
+// Danh sách lịch sử gửi webhook
+const deliveries = await webhooks.listDeliveries(webhookId);
+
+// Xem chi tiết một lần gửi
+const delivery = await webhooks.getDelivery(webhookId, deliveryId);
+
+// Gửi lại nếu thất bại
+await webhooks.resendDelivery(webhookId, deliveryId);
+
+// Test webhook
+await webhooks.test(webhookId);
+```
+
+## Tài liệu API
+
+Tham khảo thêm tại:
+
+- [Xác thực](docs/authentication.md)
+- [Sản phẩm](docs/products.md)
+- [Đơn hàng](docs/orders.md)
+- [Khách hàng](docs/customers.md)
+
+## Giấy phép sử dụng
+
+Phát hành theo giấy phép MIT – xem file LICENSE để biết thêm chi tiết.

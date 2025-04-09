@@ -15,6 +15,7 @@ export { Fulfillments } from './resources/fulfillments';
 export { Metafields } from './resources/metafields';
 export { Pages } from './resources/pages';
 export { Blogs } from './resources/blogs';
+export { Webhooks } from './resources/webhooks';
 
 // Error exports
 export {
@@ -161,6 +162,16 @@ export type {
   ArticleListParams,
   CommentListParams,
 } from './types/blogs';
+
+// Webhook types
+export type {
+  Webhook,
+  WebhookTopic,
+  CreateWebhookData,
+  WebhookListParams,
+  WebhookDelivery,
+  WebhookDeliveryListParams,
+} from './types/webhooks';
 
 // Version
 export const VERSION = '0.1.0';
