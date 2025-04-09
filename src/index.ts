@@ -7,6 +7,7 @@ export { RateLimiter } from './core/rate-limiter';
 // Resource handlers
 export { Products } from './resources/products';
 export { Orders } from './resources/orders';
+export { Customers } from './resources/customers';
 
 // Error exports
 export {
@@ -53,5 +54,14 @@ export type {
   OrderFinancialStatus,
   OrderFulfillmentStatus,
 } from './types/orders';
+
+// Customer types
+export type {
+  Customer,
+  CreateCustomerData,
+  CustomerListParams,
+  CustomerSearchParams,
+} from './types/customers';
+
 // Version
 export const VERSION = '0.1.0';
