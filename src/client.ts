@@ -4,6 +4,7 @@ import { HttpClient } from './core/client';
 import { RateLimiter } from './core/rate-limiter';
 import { SapoAuth } from './auth/oauth';
 import { Products } from './resources/products';
+import { Orders } from './resources/orders';
 import { Scope } from './types/auth';
 
 /**
@@ -18,6 +19,7 @@ export class SapoClient {
 
   // Resource handlers
   public readonly products: Products;
+  public readonly orders: Orders;
 
   constructor(config: AuthConfig) {
     this.validateConfig(config);
@@ -28,6 +30,7 @@ export class SapoClient {
 
     // Initialize resource handlers
     this.products = new Products(this);
+    this.orders = new Orders(this);
   }
 
   private validateConfig(config: AuthConfig): void {
