@@ -1,47 +1,32 @@
 /**
- * OAuth configuration options for the Sapo API client.
+ * OAuth configuration options
  * @category Authentication
  */
 export interface AuthConfig {
-  /**
-   * API Key obtained from Sapo Partner Dashboard.
-   * Used for identifying your application.
-   */
+  /** API Key from Sapo Partner Dashboard */
   apiKey: string;
 
-  /**
-   * Secret Key obtained from Sapo Partner Dashboard.
-   * Used for OAuth flow and HMAC verification.
-   */
+  /** Secret Key from Sapo Partner Dashboard */
   secretKey: string;
 
-  /**
-   * OAuth callback URL where users will be redirected after authorization.
-   * Must match the Redirect URL configured in your Sapo app settings.
-   */
+  /** Redirect URI for OAuth flow */
   redirectUri: string;
 
-  /**
-   * Optional store name (e.g., 'your-store.mysapo.net').
-   * If provided, the client will be pre-configured for this store.
-   */
+  /** Optional store name (e.g., 'your-store.mysapo.net') */
   store?: string;
 }
 
 /**
- * OAuth token response from Sapo API.
+ * OAuth token response
  * @category Authentication
  */
 export interface Token {
-  /**
-   * Access token for API requests.
-   * This token does not expire and should be stored securely.
-   */
+  /** Access token for API requests */
   access_token: string;
 }
 
 /**
- * Available OAuth scope permissions.
+ * OAuth scope permissions
  * @category Authentication
  */
 export type Scope =
@@ -76,41 +61,32 @@ export type Scope =
   /** Read access to draft orders */
   | 'read_draft_orders'
   /** Write access to draft orders */
-  | 'write_draft_orders';
+  | 'write_draft_orders'
+  /** Read access to collections */
+  | 'read_collections'
+  /** Write access to collections */
+  | 'write_collections';
 
 /**
- * Options for generating OAuth authorization URL.
+ * OAuth authorization options
  * @category Authentication
  */
 export interface AuthorizeOptions {
-  /**
-   * Store name (e.g., 'your-store.mysapo.net').
-   * This is the store where the app will be installed.
-   */
+  /** Store name (e.g., 'your-store.mysapo.net') */
   store: string;
 
-  /**
-   * List of requested scope permissions.
-   * Each scope grants specific access to different API resources.
-   * @see {@link Scope}
-   */
+  /** List of requested scope permissions */
   scopes: Scope[];
 }
 
 /**
- * Options for HMAC signature verification.
+ * HMAC verification options
  * @category Authentication
  */
 export interface VerifyHmacOptions {
-  /**
-   * Query parameters to verify.
-   * These are typically from OAuth callbacks or webhook requests.
-   */
+  /** Query parameters to verify */
   query: Record<string, string>;
 
-  /**
-   * Expected HMAC signature to verify against.
-   * This is provided by Sapo in the query parameters.
-   */
+  /** Expected HMAC signature */
   hmac: string;
 }

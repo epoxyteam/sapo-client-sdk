@@ -45,8 +45,8 @@ export class RateLimitError extends SapoError {
  * Validation errors
  */
 export class ValidationError extends SapoError {
-  constructor(message: string, errors?: Record<string, any>, requestId?: string) {
-    super(message, 'VALIDATION_ERROR', 422, requestId, errors);
+  constructor(message: string, code: string, details?: Record<string, any>) {
+    super(message, code, 422, undefined, details);
     this.name = 'ValidationError';
     Object.setPrototypeOf(this, ValidationError.prototype);
   }
@@ -76,9 +76,6 @@ export class NetworkError extends SapoError {
 
 /**
  * Create appropriate error instance from API error response
- * @param response - API error response
- * @param defaultMessage - Default error message if none provided
- * @returns Appropriate error instance based on response status
  */
 export function createErrorFromResponse(
   response: any,
@@ -98,7 +95,7 @@ export function createErrorFromResponse(
     case 404:
       return new NotFoundError(message, requestId);
     case 422:
-      return new ValidationError(message, errors, requestId);
+      return new ValidationError(message, code ?? 'VALIDATION_ERROR', errors);
     case 429: {
       const retryAfter = Number(response?.headers?.['retry-after']) || undefined;
       return new RateLimitError(message, retryAfter, requestId);
