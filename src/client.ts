@@ -9,6 +9,10 @@ import { Customers } from './resources/customers';
 import { Collections } from './resources/collections';
 import { Inventory } from './resources/inventory';
 import { PriceRules } from './resources/price-rules';
+import { Fulfillments } from './resources/fulfillments';
+import { Metafields } from './resources/metafields';
+import { Pages } from './resources/pages';
+import { Blogs } from './resources/blogs';
 import { Scope } from './types/auth';
 
 /**
@@ -28,6 +32,10 @@ export class SapoClient {
   public readonly collections: Collections;
   public readonly inventory: Inventory;
   public readonly priceRules: PriceRules;
+  public readonly fulfillments: Fulfillments;
+  public readonly metafields: Metafields;
+  public readonly pages: Pages;
+  public readonly blogs: Blogs;
 
   constructor(config: AuthConfig) {
     this.validateConfig(config);
@@ -43,6 +51,10 @@ export class SapoClient {
     this.collections = new Collections(this);
     this.inventory = new Inventory(this);
     this.priceRules = new PriceRules(this);
+    this.fulfillments = new Fulfillments(this);
+    this.metafields = new Metafields(this);
+    this.pages = new Pages(this);
+    this.blogs = new Blogs(this);
   }
 
   private validateConfig(config: AuthConfig): void {
@@ -119,9 +131,9 @@ export class SapoClient {
   /**
    * Make a DELETE request
    */
-  public async delete<T>(path: string): Promise<T> {
+  public async delete<T>(path: string, params?: Record<string, any>): Promise<T> {
     await this.rateLimiter.checkRateLimit();
-    const response = await this.httpClient.delete<T>(path);
+    const response = await this.httpClient.delete<T>(path, { params });
     this.rateLimiter.consumeToken();
     return response.data;
   }
