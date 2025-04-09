@@ -8,6 +8,8 @@ export { RateLimiter } from './core/rate-limiter';
 export { Products } from './resources/products';
 export { Orders } from './resources/orders';
 export { Customers } from './resources/customers';
+export { Collections } from './resources/collections';
+export { Inventory } from './resources/inventory';
 
 // Error exports
 export {
@@ -62,6 +64,32 @@ export type {
   CustomerListParams,
   CustomerSearchParams,
 } from './types/customers';
+
+// Collection types
+export type {
+  Collection,
+  CollectionType,
+  CollectionImage,
+  CollectionSortOrder,
+  CreateCollectionData,
+  CreateSmartCollectionData,
+  SmartCollectionRule,
+  SmartCollectionRuleOperator,
+  CollectionListParams,
+} from './types/collections';
+
+// Inventory types
+export type {
+  InventoryItem,
+  LocationInventory,
+  InventoryAdjustmentAction,
+  InventoryAdjustment,
+  UpdateInventoryLevelData,
+  InventoryTransferData,
+  InventoryTransfer,
+  Location,
+  InventoryListParams,
+} from './types/inventory';
 
 // Version
 export const VERSION = '0.1.0';

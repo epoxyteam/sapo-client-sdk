@@ -6,6 +6,9 @@ import { SapoAuth } from './auth/oauth';
 import { Products } from './resources/products';
 import { Orders } from './resources/orders';
 import { Customers } from './resources/customers';
+import { Collections } from './resources/collections';
+import { Inventory } from './resources/inventory';
+import { PriceRules } from './resources/price-rules';
 import { Scope } from './types/auth';
 
 /**
@@ -22,6 +25,9 @@ export class SapoClient {
   public readonly products: Products;
   public readonly orders: Orders;
   public readonly customers: Customers;
+  public readonly collections: Collections;
+  public readonly inventory: Inventory;
+  public readonly priceRules: PriceRules;
 
   constructor(config: AuthConfig) {
     this.validateConfig(config);
@@ -34,6 +40,9 @@ export class SapoClient {
     this.products = new Products(this);
     this.orders = new Orders(this);
     this.customers = new Customers(this);
+    this.collections = new Collections(this);
+    this.inventory = new Inventory(this);
+    this.priceRules = new PriceRules(this);
   }
 
   private validateConfig(config: AuthConfig): void {
