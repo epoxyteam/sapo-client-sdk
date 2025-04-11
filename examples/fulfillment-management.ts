@@ -3,6 +3,8 @@ import { SapoClient } from '../src';
 async function main() {
   // Initialize the SDK
   const client = new SapoClient({
+    type: 'oauth',
+    store: 'your-store.mysapo.net',
     apiKey: 'your-api-key',
     secretKey: 'your-secret-key',
     redirectUri: 'https://your-app.com/oauth/callback',
