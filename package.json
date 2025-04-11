@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "lint": "eslint src --ext .ts",
-    "format": "prettier --write \"src/**/*.ts\"",
+    "format": "prettier --write \"src/**/*.ts\" \"examples/**/*.ts\"",
     "prepare": "npm run build",
     "clean": "rimraf dist",
     "docs": "typedoc --out docs src/index.ts",

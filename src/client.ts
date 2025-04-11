@@ -1,8 +1,9 @@
-import { AuthConfig } from './types/auth';
+import { AuthConfig, OAuthConfig } from './types/auth';
 import { ClientConfig } from './types/client';
 import { HttpClient } from './core/client';
 import { RateLimiter } from './core/rate-limiter';
 import { SapoAuth } from './auth/oauth';
+import { AuthenticationError } from './errors';
 import { Products } from './resources/products';
 import { Orders } from './resources/orders';
 import { Customers } from './resources/customers';
@@ -22,7 +23,7 @@ import { Scope } from './types/auth';
  */
 export class SapoClient {
   private readonly config: Required<AuthConfig>;
-  private readonly auth: SapoAuth;
+  private readonly auth?: SapoAuth;
   private readonly httpClient: HttpClient;
   private readonly rateLimiter: RateLimiter;
 
@@ -42,7 +43,12 @@ export class SapoClient {
   constructor(config: AuthConfig) {
     this.validateConfig(config);
     this.config = this.initializeConfig(config);
-    this.auth = new SapoAuth(this.config);
+
+    // Initialize OAuth auth only for OAuth configs
+    if (this.config.type === 'oauth') {
+      this.auth = new SapoAuth(this.config as OAuthConfig);
+    }
+
     this.rateLimiter = new RateLimiter();
     this.httpClient = this.createHttpClient();
 
@@ -61,26 +67,52 @@ export class SapoClient {
   }
 
   private validateConfig(config: AuthConfig): void {
-    if (!config.apiKey || !config.secretKey || !config.redirectUri) {
-      throw new Error('apiKey, secretKey, and redirectUri are required');
+    if (!config.store) {
+      throw new Error('store is required');
+    }
+
+    if (config.type === 'oauth') {
+      if (!config.apiKey || !config.secretKey || !config.redirectUri) {
+        throw new Error('apiKey, secretKey, and redirectUri are required for OAuth');
+      }
+    } else {
+      if (!config.apiKey || !config.apiSecret) {
+        throw new Error('apiKey and apiSecret are required for Private App');
+      }
     }
   }
 
   private initializeConfig(config: AuthConfig): Required<AuthConfig> {
-    return {
-      apiKey: config.apiKey,
-      secretKey: config.secretKey,
-      redirectUri: config.redirectUri,
-      store: config.store || '',
-    };
+    if (config.type === 'oauth') {
+      return {
+        type: 'oauth',
+        apiKey: config.apiKey,
+        secretKey: config.secretKey,
+        redirectUri: config.redirectUri,
+        store: config.store,
+      };
+    } else {
+      return {
+        type: 'private',
+        apiKey: config.apiKey,
+        apiSecret: config.apiSecret,
+        store: config.store,
+      };
+    }
   }
 
   private createHttpClient(): HttpClient {
     const clientConfig: ClientConfig = {
-      baseURL: this.config.store ? `https://${this.config.store}` : '',
+      baseURL: `https://${this.config.store}`,
       timeout: 30000,
       headers: {},
     };
+
+    if (this.config.type === 'private') {
+      clientConfig.apiKey = this.config.apiKey;
+      clientConfig.apiSecret = this.config.apiSecret;
+      clientConfig.baseURL = `https://${this.config.store}`;
+    }
 
     return new HttpClient(clientConfig);
   }
@@ -145,6 +177,12 @@ export class SapoClient {
    * Get OAuth authorization URL
    */
   public getAuthorizationUrl(store: string, scopes: Scope[]): string {
+    if (!this.auth) {
+      throw new AuthenticationError(
+        'OAuth methods not available for private apps',
+        'INVALID_AUTH_METHOD'
+      );
+    }
     return this.auth.getAuthorizationUrl({ store, scopes });
   }
 
@@ -152,6 +190,12 @@ export class SapoClient {
    * Complete OAuth flow and get access token
    */
   public async completeOAuth(store: string, callbackUrl: string): Promise<string> {
+    if (!this.auth) {
+      throw new AuthenticationError(
+        'OAuth methods not available for private apps',
+        'INVALID_AUTH_METHOD'
+      );
+    }
     const token = await this.auth.completeOAuth(store, callbackUrl);
     this.httpClient.setAccessToken(token.access_token);
     return token.access_token;
@@ -168,6 +212,12 @@ export class SapoClient {
    * Verify webhook HMAC signature
    */
   public verifyWebhookHmac(query: Record<string, string>, hmac: string): boolean {
+    if (!this.auth) {
+      throw new AuthenticationError(
+        'OAuth methods not available for private apps',
+        'INVALID_AUTH_METHOD'
+      );
+    }
     return this.auth.verifyHmac({ query, hmac });
   }
 }
