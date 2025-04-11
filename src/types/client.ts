@@ -27,6 +27,16 @@ export interface ClientConfig {
   accessToken?: string;
 
   /**
+   * API Key for private app authentication
+   */
+  apiKey?: string;
+
+  /**
+   * API Secret for private app authentication
+   */
+  apiSecret?: string;
+
+  /**
    * Additional headers to include in requests.
    */
   headers?: Record<string, string>;

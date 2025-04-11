@@ -1,38 +1,48 @@
 import { SapoClient } from '../src';
+import { OAuthConfig, Scope } from '../src/types/auth';
+import { CreateBlogData, CreateArticleData, CreateCommentData } from '../src/types/blogs';
 
 async function main() {
-  // Initialize the SDK
-  const client = new SapoClient({
+  // Initialize with OAuth configuration
+  const config: OAuthConfig = {
+    type: 'oauth',
+    store: 'your-store.mysapo.net',
     apiKey: 'your-api-key',
     secretKey: 'your-secret-key',
     redirectUri: 'https://your-app.com/oauth/callback',
-  });
+  };
+
+  const client = new SapoClient(config);
+
+  // Define required scopes
+  const scopes: Scope[] = ['read_content', 'write_content'];
 
   try {
-    // Set access token (after OAuth flow)
-    client.setAccessToken('your-access-token');
-    client.setStore('your-store.mysapo.net');
+    // Complete OAuth flow
+    const authUrl = client.getAuthorizationUrl('your-store.mysapo.net', scopes);
+    console.log('1. Direct user to:', authUrl);
+    const accessToken = await client.completeOAuth('your-store.mysapo.net', 'callback-code-here');
+    console.log('2. Got access token:', accessToken);
+    client.setAccessToken(accessToken);
 
-    // Create a new blog
     console.log('\n=== Creating Blog ===');
-    const newBlog = await client.blogs.create({
+    const blogData: CreateBlogData = {
       title: 'Company News',
       comments_enabled: true,
       moderated: true,
+      template_suffix: 'blog-template',
       tags: ['news', 'company', 'updates'],
-    });
+    };
+    const newBlog = await client.blogs.create(blogData);
     console.log('Created blog:', newBlog);
 
-    // Create an article
     console.log('\n=== Creating Article ===');
-    const article = await client.blogs.createArticle(newBlog.id, {
+    const articleData: CreateArticleData = {
       title: 'Welcome to Our Blog',
       author: 'John Doe',
       body_html: `
         <h1>Welcome to Our Company Blog</h1>
-        <p>We're excited to launch our new blog where we'll share company updates,
-        industry insights, and helpful tips for our customers.</p>
-        <h2>What to Expect</h2>
+        <p>We're excited to launch our new blog where we'll share:</p>
         <ul>
           <li>Weekly updates</li>
           <li>Product announcements</li>
@@ -42,17 +52,20 @@ async function main() {
       `,
       published: true,
       tags: 'welcome, announcement',
-    });
+    };
+
+    const article = await client.blogs.createArticle(newBlog.id, articleData);
     console.log('Created article:', article);
 
-    // Add a comment
     console.log('\n=== Adding Comment ===');
-    const comment = await client.blogs.createComment(newBlog.id, article.id, {
+    const commentData: CreateCommentData = {
       author: 'Jane Smith',
       email: 'jane@example.com',
       body: 'Great first post! Looking forward to more content.',
       website: 'https://example.com',
-    });
+      published: true,
+    };
+    const comment = await client.blogs.createComment(newBlog.id, article.id, commentData);
     console.log('Added comment:', comment);
 
     // Check comment for spam
@@ -78,9 +91,9 @@ async function main() {
       body_html:
         article.body_html +
         `
-          <h2>Stay Connected</h2>
-          <p>Follow us on social media to stay up to date with our latest posts.</p>
-        `,
+        <h2>Stay Connected</h2>
+        <p>Follow us on social media to stay up to date with our latest posts.</p>
+      `,
       tags: article.tags + ', update',
     });
     console.log('Updated article:', updatedArticle);
@@ -109,8 +122,12 @@ async function main() {
     console.log('Deleted blog');
 
     // Check rate limits
-    const limits = client.getRateLimits();
-    console.log('\nRate limits:', limits);
+    const { remaining, limit, reset } = client.getRateLimits();
+    console.log('\nRate Limits:', {
+      remaining,
+      limit,
+      resetAt: new Date(reset * 1000).toLocaleString(),
+    });
   } catch (error) {
     console.error('Error:', error);
   }

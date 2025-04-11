@@ -1,4 +1,4 @@
-import { AuthConfig, AuthorizeOptions, Token, VerifyHmacOptions } from '../types/auth';
+import { OAuthConfig, AuthorizeOptions, Token, VerifyHmacOptions } from '../types/auth';
 import { AuthenticationError, createErrorFromResponse } from '../errors';
 import * as crypto from 'crypto';
 
@@ -7,9 +7,15 @@ import * as crypto from 'crypto';
  * @category Authentication
  */
 export class SapoAuth {
-  private readonly config: AuthConfig;
+  private readonly config: OAuthConfig;
 
-  constructor(config: AuthConfig) {
+  constructor(config: OAuthConfig) {
+    if (config.type !== 'oauth') {
+      throw new AuthenticationError(
+        'Invalid config type. Expected OAuth config.',
+        'INVALID_CONFIG'
+      );
+    }
     this.config = config;
   }
 
@@ -100,7 +106,7 @@ export class SapoAuth {
 
     // Calculate HMAC
     const calculatedHmac = crypto
-      .createHmac('sha256', this.config.secretKey)
+      .createHmac('sha256', this.config.type === 'oauth' ? this.config.secretKey : '')
       .update(queryString)
       .digest('base64');
 

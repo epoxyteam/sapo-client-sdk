@@ -1,12 +1,17 @@
 import { SapoClient } from '../src';
+import { OAuthConfig } from '../src/types/auth';
 
 async function main() {
   // Initialize the SDK
-  const client = new SapoClient({
+  const config: OAuthConfig = {
+    type: 'oauth',
+    store: 'your-store.mysapo.net',
     apiKey: 'your-api-key',
     secretKey: 'your-secret-key',
     redirectUri: 'https://your-app.com/oauth/callback',
-  });
+  };
+
+  const client = new SapoClient(config);
 
   try {
     // Set access token (after OAuth flow)

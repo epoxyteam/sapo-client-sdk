@@ -1,8 +1,20 @@
 /**
+ * Base configuration shared between OAuth and Private App
+ * @category Authentication
+ */
+interface BaseConfig {
+  /** Store name (e.g., 'your-store.mysapo.net') */
+  store: string;
+}
+
+/**
  * OAuth configuration options
  * @category Authentication
  */
-export interface AuthConfig {
+export interface OAuthConfig extends BaseConfig {
+  /** Authentication type */
+  type: 'oauth';
+
   /** API Key from Sapo Partner Dashboard */
   apiKey: string;
 
@@ -11,10 +23,28 @@ export interface AuthConfig {
 
   /** Redirect URI for OAuth flow */
   redirectUri: string;
-
-  /** Optional store name (e.g., 'your-store.mysapo.net') */
-  store?: string;
 }
+
+/**
+ * Private App configuration options
+ * @category Authentication
+ */
+export interface PrivateAppConfig extends BaseConfig {
+  /** Authentication type */
+  type: 'private';
+
+  /** API Key from Private App */
+  apiKey: string;
+
+  /** API Secret from Private App */
+  apiSecret: string;
+}
+
+/**
+ * Combined authentication configuration
+ * @category Authentication
+ */
+export type AuthConfig = OAuthConfig | PrivateAppConfig;
 
 /**
  * OAuth token response
