@@ -36,11 +36,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/doivjpxx/sapo-client-sdk.git"
+    "url": "https://github.com/epoxyteam/sapo-client-sdk.git"
   },
-  "homepage": "https://github.com/doivjpxx/sapo-client-sdk#readme",
+  "homepage": "https://github.com/epoxyteam/sapo-client-sdk#readme",
   "bugs": {
-    "url": "https://github.com/doivjpxx/sapo-client-sdk/issues"
+    "url": "https://github.com/epoxyteam/sapo-client-sdk/issues"
   },
   "license": "MIT",
   "devDependencies": {
