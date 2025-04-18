@@ -47,9 +47,10 @@ import { SapoClient } from 'sapo-client-sdk';
 
 // Khởi tạo client
 const client = new SapoClient({
+  type: 'private',
+  store: 'your-store.mysapo.net',
   apiKey: 'your-api-key',
-  secretKey: 'your-secret-key',
-  redirectUri: 'https://your-app.com/oauth/callback',
+  apiSecret: 'your-secret-key',
 });
 
 // Lấy URL để người dùng xác thực OAuth
@@ -78,9 +79,10 @@ SDK hỗ trợ quy trình xác thực theo chuẩn OAuth 2.0. Các bước tri�
 
 ```typescript
 const client = new SapoClient({
+  type: 'private',
+  store: 'your-store.mysapo.net',
   apiKey: process.env.SAPO_API_KEY,
-  secretKey: process.env.SAPO_SECRET_KEY,
-  redirectUri: process.env.SAPO_REDIRECT_URI,
+  apiSecret: process.env.SAPO_SECRET_KEY,
 });
 ```
 
@@ -278,6 +280,14 @@ Tham khảo thêm tại:
 - [Sản phẩm](docs/products.md)
 - [Đơn hàng](docs/orders.md)
 - [Khách hàng](docs/customers.md)
+- [Bộ sưu tập](docs/collections.md)
+- [Kho hàng](docs/inventory.md)
+- [Quy tắc giá & Giảm giá](docs/price-rules.md)
+- [Thực hiện đơn hàng](docs/fulfillments.md)
+- [Metafields](docs/metafields.md)
+- [Trang](docs/pages.md)
+- [Blog & Bài viết](docs/blogs.md)
+- [Webhook](docs/webhooks.md)
 
 ## Giấy phép sử dụng
 

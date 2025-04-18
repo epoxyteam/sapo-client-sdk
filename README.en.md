@@ -45,9 +45,10 @@ import { SapoClient } from 'sapo-client-sdk';
 
 // Initialize the client
 const client = new SapoClient({
+  type: 'private',
+  store: 'your-store.mysapo.net',
   apiKey: 'your-api-key',
-  secretKey: 'your-secret-key',
-  redirectUri: 'https://your-app.com/oauth/callback',
+  apiSecret: 'your-secret-key',
 });
 
 // Get OAuth authorization URL
@@ -78,9 +79,10 @@ The SDK supports OAuth 2.0 authentication flow. Here's a detailed guide on imple
 1. Initialize the client with your credentials:
 ```typescript
 const client = new SapoClient({
+  type: 'private',
+  store: 'your-store.mysapo.net',
   apiKey: process.env.SAPO_API_KEY,
-  secretKey: process.env.SAPO_SECRET_KEY,
-  redirectUri: process.env.SAPO_REDIRECT_URI,
+  apiSecret: process.env.SAPO_SECRET_KEY,
 });
 ```
 
@@ -278,6 +280,14 @@ For detailed API documentation and examples, see:
 - [Products](docs/products.md)
 - [Orders](docs/orders.md)
 - [Customers](docs/customers.md)
+- [Collections](docs/collections.md)
+- [Inventory](docs/inventory.md)
+- [Price Rules & Discounts](docs/price-rules.md)
+- [Fulfillments](docs/fulfillments.md)
+- [Metafields](docs/metafields.md)
+- [Pages](docs/pages.md)
+- [Blogs & Articles](docs/blogs.md)
+- [Webhooks](docs/webhooks.md)
 
 ## License
 
