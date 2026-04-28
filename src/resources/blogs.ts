@@ -132,6 +132,43 @@ export class Blogs {
   }
 
   /**
+   * Get total article count for a blog
+   * @param blogId Blog ID
+   * @param params Filter parameters
+   */
+  public async countArticles(blogId: number, params?: Partial<ArticleListParams>): Promise<number> {
+    const response = await this.client.get<{ count: number }>(
+      `/admin/blogs/${blogId}/articles/count.json`,
+      params
+    );
+    return response.count;
+  }
+
+  /**
+   * Get list of article authors
+   */
+  public async getAuthors(): Promise<string[]> {
+    const response = await this.client.get<{ authors: string[] }>('/admin/articles/authors.json');
+    return response.authors;
+  }
+
+  /**
+   * Get tags for articles in a blog
+   * @param blogId Blog ID
+   * @param params Optional params (e.g. limit, popular)
+   */
+  public async getArticleTags(
+    blogId: number,
+    params?: { limit?: number; popular?: number }
+  ): Promise<string[]> {
+    const response = await this.client.get<{ tags: string[] }>(
+      `/admin/blogs/${blogId}/articles/tags.json`,
+      params
+    );
+    return response.tags;
+  }
+
+  /**
    * List comments for an article
    * @param blogId Blog ID
    * @param articleId Article ID
