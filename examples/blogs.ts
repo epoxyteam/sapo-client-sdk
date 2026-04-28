@@ -106,6 +106,21 @@ async function main() {
     });
     console.log('Articles:', articles);
 
+    // Count articles
+    console.log('\n=== Article Count ===');
+    const articleCount = await client.blogs.countArticles(newBlog.id, { published: true });
+    console.log('Published article count:', articleCount);
+
+    // Get article authors
+    console.log('\n=== Article Authors ===');
+    const authors = await client.blogs.getAuthors();
+    console.log('Authors:', authors);
+
+    // Get article tags
+    console.log('\n=== Article Tags ===');
+    const tags = await client.blogs.getArticleTags(newBlog.id, { popular: 1, limit: 10 });
+    console.log('Popular tags:', tags);
+
     // Clean up
     console.log('\n=== Cleanup ===');
 
