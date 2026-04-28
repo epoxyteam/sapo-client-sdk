@@ -28,8 +28,9 @@ export class SapoAuth {
     const { store, scopes } = options;
     const query = new URLSearchParams({
       client_id: this.config.apiKey,
-      scope: scopes.join(','),
+      scope: scopes.join(' '),
       redirect_uri: this.config.redirectUri,
+      response_type: 'code',
     });
 
     return `https://${store}/admin/oauth/authorize?${query.toString()}`;
@@ -108,7 +109,7 @@ export class SapoAuth {
     const calculatedHmac = crypto
       .createHmac('sha256', this.config.type === 'oauth' ? this.config.secretKey : '')
       .update(queryString)
-      .digest('base64');
+      .digest('hex');
 
     return crypto.timingSafeEqual(Buffer.from(calculatedHmac), Buffer.from(hmac));
   }
